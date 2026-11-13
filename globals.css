@@ -1,0 +1,430 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------
+   Cloud Hard Drive — design tokens
+   Surface language: anodized aluminium drive chassis + archival paper.
+   Light = warm paper over brushed metal, Dark = graphite chassis.
+   Accent = the safety-orange latch of a rugged external drive.
+------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  --c-bg: #f1eee7;
+  --c-bg-2: #e9e5db;
+  --c-panel: #fbfaf6;
+  --c-panel-2: #f4f2ec;
+  --c-line: #ded7c9;
+  --c-line-strong: #c9c1b0;
+  --c-ink: #14161a;
+  --c-ink-2: #57544c;
+  --c-ink-3: #8a8477;
+  --c-accent: #ff5b22;
+  --c-accent-ink: #ffffff;
+  --c-accent-soft: rgba(255, 91, 34, 0.12);
+  --c-ok: #1a7f4b;
+  --c-ok-soft: rgba(26, 127, 75, 0.12);
+  --c-warn: #b45309;
+  --c-warn-soft: rgba(180, 83, 9, 0.12);
+  --c-danger: #b91c1c;
+  --c-shadow: 0 18px 40px -24px rgba(20, 22, 26, 0.45);
+  --c-metal: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --c-bg: #0e1012;
+  --c-bg-2: #0a0c0d;
+  --c-panel: #16191c;
+  --c-panel-2: #1b1f22;
+  --c-line: #272c31;
+  --c-line-strong: #394046;
+  --c-ink: #ece9e2;
+  --c-ink-2: #9aa1a7;
+  --c-ink-3: #6d757c;
+  --c-accent: #ff6b3a;
+  --c-accent-ink: #14161a;
+  --c-accent-soft: rgba(255, 107, 58, 0.14);
+  --c-ok: #4ade80;
+  --c-ok-soft: rgba(74, 222, 128, 0.12);
+  --c-warn: #fbbf24;
+  --c-warn-soft: rgba(251, 191, 36, 0.12);
+  --c-danger: #f87171;
+  --c-shadow: 0 24px 50px -28px rgba(0, 0, 0, 0.9);
+  --c-metal: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+}
+
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-bg2: var(--c-bg-2);
+  --color-panel: var(--c-panel);
+  --color-panel2: var(--c-panel-2);
+  --color-line: var(--c-line);
+  --color-line2: var(--c-line-strong);
+  --color-ink: var(--c-ink);
+  --color-ink2: var(--c-ink-2);
+  --color-ink3: var(--c-ink-3);
+  --color-accent: var(--c-accent);
+  --color-accentink: var(--c-accent-ink);
+  --color-accentsoft: var(--c-accent-soft);
+  --color-ok: var(--c-ok);
+  --color-oksoft: var(--c-ok-soft);
+  --color-warn: var(--c-warn);
+  --color-warnsoft: var(--c-warn-soft);
+  --color-danger: var(--c-danger);
+  --font-sans: var(--font-plex), "Segoe UI", Tahoma, "Noto Sans Arabic", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+* {
+  border-color: var(--c-line);
+}
+
+html,
+body {
+  background: var(--c-bg);
+  color: var(--c-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Thin, quiet scrollbars — this is a utility, not a brochure */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-line-strong) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-line-strong);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer components {
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-ink-3);
+    font-weight: 500;
+  }
+
+  .panel {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 14px;
+    box-shadow: var(--c-shadow);
+  }
+
+  .panel-flat {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 14px;
+  }
+
+  .metal {
+    background-image: var(--c-metal);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 10px;
+    padding: 0.6rem 1.1rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease,
+      transform 90ms ease;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-primary {
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--c-ink);
+    border-color: var(--c-line-strong);
+  }
+  .btn-outline:hover:not(:disabled) {
+    background: var(--c-panel-2);
+    border-color: var(--c-ink-3);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--c-ink-2);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--c-panel-2);
+    color: var(--c-ink);
+  }
+  .btn-danger {
+    background: var(--c-danger);
+    color: #fff;
+  }
+  .btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.82rem;
+    border-radius: 8px;
+  }
+
+  .field {
+    width: 100%;
+    background: var(--c-panel-2);
+    border: 1px solid var(--c-line);
+    border-radius: 10px;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+    color: var(--c-ink);
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+  .field::placeholder {
+    color: var(--c-ink-3);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--c-accent);
+    background: var(--c-panel);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid var(--c-line);
+    background: var(--c-panel-2);
+    color: var(--c-ink-2);
+    border-radius: 999px;
+    padding: 0.28rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    transition: all 140ms ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .chip:hover {
+    border-color: var(--c-line-strong);
+    color: var(--c-ink);
+  }
+  .chip[data-active="true"] {
+    background: var(--c-accent-soft);
+    border-color: var(--c-accent);
+    color: var(--c-accent);
+  }
+
+  .led {
+    width: 7px;
+    height: 7px;
+    border-radius: 99px;
+    background: var(--c-ok);
+    box-shadow: 0 0 8px var(--c-ok);
+    animation: led-pulse 2.4s ease-in-out infinite;
+  }
+  .led-idle {
+    background: var(--c-ink-3);
+    box-shadow: none;
+    animation: none;
+  }
+  .led-warn {
+    background: var(--c-warn);
+    box-shadow: 0 0 8px var(--c-warn);
+  }
+
+  /* Segmented level meter — the drive-bay readout */
+  .gauge {
+    position: relative;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--c-panel-2);
+    border: 1px solid var(--c-line);
+    overflow: hidden;
+  }
+  .gauge-fill {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    background: var(--c-accent);
+    transition: width 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .gauge-fill.is-full {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--c-accent),
+      var(--c-accent) 7px,
+      rgba(255, 255, 255, 0.35) 7px,
+      rgba(255, 255, 255, 0.35) 14px
+    );
+  }
+  .gauge-ticks {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(5% - 1px),
+      rgba(0, 0, 0, 0.16) calc(5% - 1px),
+      rgba(0, 0, 0, 0.16) 5%
+    );
+    pointer-events: none;
+  }
+  [data-theme="dark"] .gauge-ticks {
+    background-image: repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(5% - 1px),
+      rgba(255, 255, 255, 0.14) calc(5% - 1px),
+      rgba(255, 255, 255, 0.14) 5%
+    );
+  }
+
+  .progress {
+    height: 6px;
+    border-radius: 99px;
+    background: var(--c-panel-2);
+    border: 1px solid var(--c-line);
+    overflow: hidden;
+  }
+  .progress > i {
+    display: block;
+    height: 100%;
+    background: var(--c-accent);
+    transition: width 240ms ease;
+  }
+
+  .tile {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--c-panel-2);
+    border: 1px solid var(--c-line);
+    aspect-ratio: 1 / 1;
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  }
+  .tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--c-shadow);
+    border-color: var(--c-line-strong);
+  }
+  .tile img,
+  .tile video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Hold-to-confirm — a physical eject button, not a modal */
+  .hold-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hold-btn > .hold-fill {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 0%;
+    background: rgba(255, 255, 255, 0.28);
+    z-index: -1;
+    transition: width 80ms linear;
+  }
+}
+
+@keyframes led-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sweep {
+  from {
+    background-position: -220% 0;
+  }
+  to {
+    background-position: 220% 0;
+  }
+}
+
+.animate-rise {
+  animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--c-panel-2) 25%,
+    var(--c-line) 50%,
+    var(--c-panel-2) 75%
+  );
+  background-size: 220% 100%;
+  animation: sweep 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
