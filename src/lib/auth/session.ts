@@ -25,11 +25,6 @@ export function toPublicUser(u: User): PublicUser {
   };
 }
 
-/**
- * Cookies are Secure only when the app is served over HTTPS — controlled by
- * APP_BASE_URL so the same build works behind TLS in production and on http
- * in local development.
- */
 export function cookieSecure(): boolean {
   return (process.env.APP_BASE_URL || "").startsWith("https://");
 }
@@ -75,7 +70,7 @@ async function tokenFromCookie(): Promise<string | null> {
   return store.get(SESSION_COOKIE)?.value ?? null;
 }
 
-/** Returns the signed-in user (joined through an unexpired, unrevoked session). */
+/** Only verified accounts can resolve to an authenticated session user. */
 export async function getSessionUser(): Promise<User | null> {
   const token = await tokenFromCookie();
   if (!token) return null;
@@ -83,13 +78,12 @@ export async function getSessionUser(): Promise<User | null> {
     .select({ user: users, session: sessions })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
-    .where(
-      and(
-        eq(sessions.tokenHash, sha256Hex(token)),
-        isNull(sessions.revokedAt),
-        gt(sessions.expiresAt, new Date()),
-      ),
-    )
+    .where(and(
+      eq(sessions.tokenHash, sha256Hex(token)),
+      isNull(sessions.revokedAt),
+      gt(sessions.expiresAt, new Date()),
+      eq(users.emailVerified, true),
+    ))
     .limit(1);
   return rows[0]?.user ?? null;
 }
@@ -97,10 +91,7 @@ export async function getSessionUser(): Promise<User | null> {
 export async function revokeCurrentSession(): Promise<void> {
   const token = await tokenFromCookie();
   if (!token) return;
-  await db
-    .update(sessions)
-    .set({ revokedAt: new Date() })
-    .where(eq(sessions.tokenHash, sha256Hex(token)));
+  await db.update(sessions).set({ revokedAt: new Date() }).where(eq(sessions.tokenHash, sha256Hex(token)));
 }
 
 export async function revokeAllSessions(userId: string): Promise<void> {

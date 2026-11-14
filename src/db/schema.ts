@@ -27,6 +27,7 @@ export const users = pgTable(
     picture: text("picture"),
     googleId: text("google_id"),
     provider: text("provider").notNull().default("email"),
+    emailVerified: boolean("email_verified").notNull().default(false),
     quotaBytes: bigint("quota_bytes", { mode: "number" }).notNull().default(15_000_000_000),
     autoUpload: boolean("auto_upload").notNull().default(false),
     wifiOnly: boolean("wifi_only").notNull().default(true),
@@ -36,6 +37,26 @@ export const users = pgTable(
   (t) => [
     uniqueIndex("users_email_norm_uq").on(t.emailNorm),
     uniqueIndex("users_google_id_uq").on(t.googleId),
+  ],
+);
+
+export const emailVerifications = pgTable(
+  "email_verifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull(),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    resendAvailableAt: timestamp("resend_available_at", { withTimezone: true }).notNull(),
+    resendWindowStartedAt: timestamp("resend_window_started_at", { withTimezone: true }).notNull().defaultNow(),
+    resendCount: integer("resend_count").notNull().default(0),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("email_verifications_user_uq").on(t.userId),
+    index("email_verifications_expires_idx").on(t.expiresAt),
   ],
 );
 
