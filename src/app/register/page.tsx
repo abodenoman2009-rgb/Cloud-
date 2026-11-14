@@ -8,7 +8,7 @@ import { AuthShell, GoogleG } from "@/components/auth-shell";
 import { Spinner } from "@/components/ui";
 
 export default function RegisterPage() {
-  const { t, api, setUser, toast } = useApp();
+  const { t, api } = useApp();
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,13 +23,11 @@ export default function RegisterPage() {
     if (password.length < 8) return setError(t("auth.shortPassword"));
     setBusy(true);
     try {
-      const res = await api<{ user: unknown }>("/api/auth/register", {
+      await api<{ pendingVerification: boolean }>("/api/auth/register", {
         method: "POST",
         body: JSON.stringify({ name, email, password }),
       });
-      setUser(res.user as never);
-      toast(t("auth.registered"));
-      router.replace("/app");
+      router.push(`/verify?email=${encodeURIComponent(email.trim())}`);
     } catch (e2) {
       const code = (e2 as { code?: string }).code;
       setError(
@@ -39,7 +37,11 @@ export default function RegisterPage() {
             ? t("auth.invalidEmail")
             : code === "weak_password"
               ? t("auth.shortPassword")
-              : t("err.generic"),
+              : code === "email_not_configured"
+                ? "خدمة البريد غير مهيأة حالياً. يرجى المحاولة لاحقاً أو التواصل مع الدعم."
+                : code === "mail_failed"
+                  ? "تعذر إرسال رسالة التحقق. تحقق من البريد وحاول مرة أخرى."
+                  : t("err.generic"),
       );
     } finally {
       setBusy(false);
@@ -69,56 +71,20 @@ export default function RegisterPage() {
 
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <label className="label mb-1.5 block" htmlFor="name">
-            {t("auth.name")}
-          </label>
-          <input
-            id="name"
-            className="field"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t("auth.name")}
-          />
+          <label className="label mb-1.5 block" htmlFor="name">{t("auth.name")}</label>
+          <input id="name" className="field" required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("auth.name")} />
         </div>
         <div>
-          <label className="label mb-1.5 block" htmlFor="email">
-            {t("auth.email")}
-          </label>
-          <input
-            id="email"
-            type="email"
-            className="field"
-            dir="ltr"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-          />
+          <label className="label mb-1.5 block" htmlFor="email">{t("auth.email")}</label>
+          <input id="email" type="email" className="field" dir="ltr" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
         </div>
         <div>
-          <label className="label mb-1.5 block" htmlFor="password">
-            {t("auth.password")}
-          </label>
-          <input
-            id="password"
-            type="password"
-            className="field"
-            dir="ltr"
-            minLength={8}
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-          />
+          <label className="label mb-1.5 block" htmlFor="password">{t("auth.password")}</label>
+          <input id="password" type="password" className="field" dir="ltr" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
           <p className="mt-1.5 text-[11px] text-ink3">{t("auth.shortPassword")}</p>
         </div>
 
-        {error && (
-          <p className="text-sm" style={{ color: "var(--c-danger)" }}>
-            {error}
-          </p>
-        )}
+        {error && <p className="text-sm" style={{ color: "var(--c-danger)" }}>{error}</p>}
 
         <button className="btn btn-primary w-full" disabled={busy} type="submit">
           {busy && <Spinner />}
@@ -127,10 +93,7 @@ export default function RegisterPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-ink2">
-        {t("auth.hasAccount")}{" "}
-        <Link href="/login" className="font-semibold text-ink underline underline-offset-4">
-          {t("nav.login")}
-        </Link>
+        {t("auth.hasAccount")} <Link href="/login" className="font-semibold text-ink underline underline-offset-4">{t("nav.login")}</Link>
       </p>
     </AuthShell>
   );

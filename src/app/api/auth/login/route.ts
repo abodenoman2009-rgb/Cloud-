@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { sessions, users } from "@/db/schema";
+import { users } from "@/db/schema";
 import { verifyPassword } from "@/lib/auth/crypto";
 import { clientIp, fail, ok } from "@/lib/api";
+import { createVerification } from "@/lib/auth/email-verification";
 import { issueSession, setSessionCookie, toPublicUser } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
@@ -19,12 +20,16 @@ export async function POST(req: NextRequest) {
   if (!user) return fail(401, "invalid_credentials");
   if (!user.passwordHash) return fail(401, "use_google");
   if (!(await verifyPassword(password, user.passwordHash))) return fail(401, "invalid_credentials");
-  if (!user.emailVerified) return fail(403, "email_unverified");
+  if (!user.emailVerified) {
+    try {
+      await createVerification(user.id, user.email, user.name);
+    } catch {
+      return fail(502, "mail_failed");
+    }
+    return fail(403, "email_unverified");
+  }
 
-  const { token, expiresAt } = await issueSession(user.id, {
-    userAgent: req.headers.get("user-agent"),
-    ip: clientIp(req),
-  });
+  const { token, expiresAt } = await issueSession(user.id, { userAgent: req.headers.get("user-agent"), ip: clientIp(req) });
   const response = ok({ user: toPublicUser(user) });
   setSessionCookie(response, token, expiresAt);
   return response;
