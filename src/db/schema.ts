@@ -16,6 +16,8 @@ import {
  * Blobs go through the object store (S3 compatible / server object volume).
  */
 
+export const DEFAULT_USER_QUOTA_BYTES = 1_099_511_627_776; // 1 TiB = 1024 GiB
+
 export const users = pgTable(
   "users",
   {
@@ -28,7 +30,7 @@ export const users = pgTable(
     googleId: text("google_id"),
     provider: text("provider").notNull().default("email"),
     emailVerified: boolean("email_verified").notNull().default(false),
-    quotaBytes: bigint("quota_bytes", { mode: "number" }).notNull().default(15_000_000_000),
+    quotaBytes: bigint("quota_bytes", { mode: "number" }).notNull().default(DEFAULT_USER_QUOTA_BYTES),
     autoUpload: boolean("auto_upload").notNull().default(false),
     wifiOnly: boolean("wifi_only").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
